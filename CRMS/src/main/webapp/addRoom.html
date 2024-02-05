@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Room</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-center mb-4">Add Room</h1>
+            <form id="addRoomForm">
+                <div class="form-group">
+                    <label for="roomName">Room Name:</label>
+                    <input type="text" class="form-control" id="roomName" name="roomName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="seatNum">Seat Number:</label>
+                    <input type="number" class="form-control" id="seatNum" name="seatNum" required>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-block" onclick="addRoom()">Add Room</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addRoom() {
+        var roomName = $("#roomName").val();
+        var seatNum = $("#seatNum").val();
+
+        // 发送 AJAX 请求到后端，添加机房
+        $.ajax({
+            url: "roomServlet",  // 替换为实际的后端处理地址
+            type: "POST",
+            data: {
+                "action": "add_room",
+                "roomName": roomName,
+                "seatNum": seatNum
+            },
+            success: function (data) {
+                // 处理后端返回的结果
+                alert(data);  // 可以根据实际需求进行更复杂的处理
+                window.location.href="main.html";
+            },
+            error: function (error) {
+                console.error("Error:", error);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>机房管理系统</title>
+	<link rel="stylesheet" type="text/css" href="css/default.css">
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,700">
+  	<link rel="stylesheet" href="css/style.min.css">
+	<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+	<style>
+		table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+
+		th, td {
+			padding: 8px;
+			text-align: left;
+			border-bottom: 1px solid #ddd;
+		}
+
+		tr:hover {background-color:#f5f5f5;}
+	</style>
+</head>
+<body>
+	<div id="wrapper" class="wrapper">
+	  <div class="header htmleaf-header" id="display_header">
+		</div>
+	  <main>
+	    <div class="container" id="display">
+			<h1>欢迎！<br>在左侧选择想要查看的内容吧。</h1>
+	    </div>
+	  </main>
+	</div><!-- /wrapper -->
+
+	<button id="mm-menu-toggle" class="mm-menu-toggle">Toggle Menu</button>
+	<nav id="mm-menu" class="mm-menu">
+	  <div class="mm-menu__header">
+	    <h2 style="font-size: 36px" class="mm-menu__title">机房管理系统<br><p style="font-size: 24px" id="user_info">用户信息</p></h2>
+	  </div>
+	  <ul class="mm-menu__items">
+		  <li class="mm-menu__item" onclick="choose_user()">
+			  <a class="mm-menu__link">
+				  <span class="mm-menu__link-text"><i class="md md-person"></i> 用户</span>
+			  </a>
+		  </li>
+	    <li class="mm-menu__item" onclick="choose_room()">
+	      <a class="mm-menu__link" href="#">
+	        <span class="mm-menu__link-text"><i class="md md-home"></i> 机房</span>
+	      </a>
+	    </li>
+
+	    <li class="mm-menu__item" onclick="choose_pc()">
+	      <a class="mm-menu__link" href="#">
+	        <span class="mm-menu__link-text"><i class="md md-inbox"></i> 电脑</span>
+	      </a>
+	    </li>
+	  </ul>
+	</nav><!-- /nav -->
+	
+	<script src="js/production/materialMenu.min.js"></script>
+	<script>
+	  var menu = new Menu;
+	  var user;
+	  var user_group;
+	  var display_div=document.getElementById("display");
+	  var display_header=document.getElementById("display_header");
+	  var in_change=false;
+	  (function (){
+		  $.ajax({
+			  url:"loginServlet",
+			  type:"POST",
+			  data:{
+				  "action":"get_user",
+			  },
+			  async:false,
+			  success:function (data){
+				  user=data;
+				  document.getElementById("user_info").innerHTML="你好! "+user+".";
+			  }
+		  })
+		  $.ajax({
+			  url:"loginServlet",
+			  type:"POST",
+			  data:{
+				  "action":"get_user_group",
+			  },
+			  async:false,
+			  success:function (data){
+				  user_group=data;
+				  document.getElementById("user_info").innerHTML+="    ("+user_group+")";
+			  }
+		  })
+	  })();
+
+	  function choose_user(){
+		  display_header.innerHTML="";
+		  select_user();
+	  }
+
+	  function select_user() {
+		  $.ajax({
+			  url:"loginServlet",
+			  type:"POST",
+			  data:{
+				  "action":"select"
+			  },
+			  success:function (data){
+				  show_user_table(data);
+			  }
+		  })
+	  }
+
+	  function show_user_table(data){
+		  data_json=JSON.parse(data)
+		  display_div.innerHTML="";
+		  var table=document.createElement("table");
+		  display_div.append(table);
+		  table.innerHTML+="<thead><tr><th>用户名</th><th>密码</th><th>所属用户组</th><th>操作</th></tr></thead>";
+		  var tbody=document.createElement("tbody");
+		  for(var i=0;i<data_json.length;i++){
+			  var tr=document.createElement("tr");
+
+			  tr.innerHTML="<td>"+data_json[i].user+"</td><td>******</td><td>"+data_json[i].user_group+"</td>";
+			  var td=document.createElement("td");
+
+			  var ch_button=document.createElement("button");
+			  ch_button.innerHTML="修改";
+			  ch_button.className="btn btn-primary";
+			  ch_button.onclick=(function (tr,user,password,user_group){
+				  return function (){
+					  if(!in_change){
+						  in_change=true;
+						  tr.innerHTML="";
+
+						  var td_user=document.createElement("td");
+						  tr.append(td_user);
+						  var input_user=document.createElement("input");
+						  input_user.value=user;
+						  input_user.disabled=true;
+						  td_user.append(input_user);
+
+						  var td_password=document.createElement("td");
+						  tr.append(td_password);
+						  var input_password=document.createElement("input");
+						  input_password.value=password;
+						  td_password.append(input_password);
+
+						  var td_user_group=document.createElement("td");
+						  tr.append(td_user_group);
+						  var select_user_group=document.createElement("select");
+						  var option_0=document.createElement("option");
+						  option_0.innerHTML="user";
+						  option_0.value="user";
+						  select_user_group.append(option_0)
+						  var option_1=document.createElement("option");
+						  option_1.innerHTML="root";
+						  option_1.value="root";
+						  select_user_group.append(option_1)
+						  select_user_group.value=user_group;
+						  td_user_group.append(select_user_group);
+
+						  var td_action=document.createElement("td");
+						  tr.append(td_action);
+						  var ok_button=document.createElement("button");
+						  ok_button.innerHTML="确认";
+						  ok_button.className="btn btn-success"
+						  ok_button.onclick=(function (user,password,user_group){
+							  return function (){
+								  $.ajax({
+									  url:"loginServlet",
+									  type:"POST",
+									  data:{
+										  "action":"update",
+										  "user":user,
+										  "password":password.value,
+										  "user_group":user_group.value
+									  },
+									  success:function (data){
+										  in_change=false;
+										  select_user();
+									  }
+								  })
+							  }
+						  })(user,input_password,select_user_group);
+						  td_action.append(ok_button);
+						  var can_button=document.createElement("button");
+						  can_button.innerHTML="取消";
+						  can_button.className="btn btn-info";
+						  can_button.onclick=function () {
+							  in_change=false;
+							  select_user();
+						  };
+						  td_action.append(can_button);
+					  }else{
+						  alert("请先完成当前修改");
+					  }
+				  }
+			  })(tr,data_json[i].user,data_json[i].password,data_json[i].user_group);
+
+			  var del_button=document.createElement("button");
+			  del_button.innerHTML="删除";
+			  del_button.className="btn btn-danger";
+			  del_button.onclick=(function (user) {
+				  return function () {
+					  var confirmDelete = confirm("确定要删除该用户吗？");
+					  if (confirmDelete) {
+						  $.ajax({
+							  url: "loginServlet",
+							  type: "POST",
+							  data: {
+								  "action": "del",
+								  "user": user
+							  },
+							  success: function (data) {
+								  select_user(); // Refresh user table after deletion
+							  }
+						  });
+					  }
+				  };
+			  })(data_json[i].user);
+			  if(user_group=="root"){
+				  td.append(ch_button);
+				  td.append(del_button);
+			  }else{
+				  td.innerHTML="没有权限"
+			  }
+			  tr.append(td);
+			  table.append(tr);
+		  }
+	  }
+
+	  function choose_room(){
+		  display_header.innerHTML="";
+		  var add_button=document.createElement("button");
+		  add_button.innerHTML="添加";
+		  add_button.className="btn btn-primary";
+		  add_button.onclick=function (){
+			  window.location.href="addRoom.html";
+		  }
+		  if(user_group=="root") display_header.append(add_button);
+		  select_room();
+	  }
+
+	  function select_room() {
+		  $.ajax({
+			  url: "roomServlet",
+			  type: "POST",
+			  data: {
+				  "action": "get_all_rooms"
+			  },
+			  success: function (data) {
+				  show_room_table(data);
+			  }
+		  });
+	  }
+
+	  function show_room_table(data) {
+		  var data_json = JSON.parse(data);
+		  display_div.innerHTML = "";
+		  var table = document.createElement("table");
+		  display_div.append(table);
+		  table.innerHTML += "<thead><tr><th>房间名</th><th>座位数量</th><th>设备数量</th><th>操作</th></tr></thead>";
+		  var tbody = document.createElement("tbody");
+		  for (var i = 0; i < data_json.length; i++) {
+			  var tr = document.createElement("tr");
+			  tr.innerHTML = "<td>" + data_json[i].room + "</td><td>" + data_json[i].seat_num + "</td><td>"+data_json[i].pc_num+"</td>";
+			  var td = document.createElement("td");
+
+			  var ch_button = document.createElement("button");
+			  ch_button.innerHTML = "修改";
+			  ch_button.className = "btn btn-primary";
+			  ch_button.onclick = (function (tr, room, seatNum, pc_num) {
+				  return function () {
+					  if (!in_change) {
+						  in_change = true;
+						  tr.innerHTML = "";
+
+						  var td_room = document.createElement("td");
+						  tr.append(td_room);
+						  var input_room = document.createElement("input");
+						  input_room.value = room;
+						  input_room.disabled = true;
+						  td_room.append(input_room);
+
+						  var td_seat_num = document.createElement("td");
+						  tr.append(td_seat_num);
+						  var input_seat_num = document.createElement("input");
+						  input_seat_num.value = seatNum;
+						  td_seat_num.append(input_seat_num);
+
+						  var td_pc_num = document.createElement("td");
+						  td_pc_num.innerHTML=pc_num;
+						  tr.append(td_pc_num);
+
+						  var td_actions = document.createElement("td");
+						  tr.append(td_actions);
+
+						  var ok_button = document.createElement("button");
+						  ok_button.innerHTML = "确认";
+						  ok_button.className = "btn btn-success";
+						  ok_button.onclick = function () {
+							  $.ajax({
+								  url: "roomServlet",
+								  type: "POST",
+								  data: {
+									  "action": "update_room",
+									  "roomName": input_room.value,
+									  "newSeatNum": input_seat_num.value
+								  },
+								  success: function (data) {
+									  if(data!="success")alert(data);
+									  in_change = false;
+									  select_room();
+								  }
+							  });
+						  };
+						  td_actions.append(ok_button);
+
+						  var cancel_button = document.createElement("button");
+						  cancel_button.innerHTML = "取消";
+						  cancel_button.className = "btn btn-info";
+						  cancel_button.onclick = function () {
+							  in_change = false;
+							  select_room();
+						  };
+						  td_actions.append(cancel_button);
+					  } else {
+						  alert("请先完成当前修改");
+					  }
+				  }
+			  })(tr, data_json[i].room, data_json[i].seat_num, data_json[i].pc_num);
+			  var del_button = document.createElement("button");
+			  del_button.innerHTML = "删除";
+			  del_button.className = "btn btn-danger";
+			  del_button.onclick = (function (room) {
+				  return function () {
+					  var confirmDelete = confirm("确定要删除该房间吗？");
+					  if (confirmDelete) {
+						  $.ajax({
+							  url: "roomServlet",
+							  type: "POST",
+							  data: {
+								  "action": "delete_room",
+								  "roomName": room
+							  },
+							  success: function (data) {
+								  select_room(); // Refresh room table after deletion
+							  }
+						  });
+					  }
+				  };
+			  })(data_json[i].room);
+			  if(user_group=="root"){
+				  td.append(ch_button);
+				  td.append(del_button);
+			  }else{
+				  td.innerHTML="没有权限"
+			  }
+			  tr.append(td);
+			  table.append(tr);
+		  }
+	  }
+
+	  function choose_pc(){
+		  display_header.innerHTML=""
+		  var add_button=document.createElement("button");
+		  add_button.innerHTML="添加";
+		  add_button.className="btn btn-primary";
+		  add_button.onclick=function (){
+			  window.location.href="addPC.html";
+		  }
+		  if(user_group=="root") display_header.append(add_button);
+
+		  var selectState = document.createElement("select");
+		  selectState.className="form-select";
+		  var options = ["全部","使用中", "闲置中", "需要维护"];
+		  for (var j = 0; j < options.length; j++) {
+			  var option = document.createElement("option");
+			  option.value = options[j];
+			  option.text = options[j];
+			  selectState.add(option);
+		  }
+		  selectState.value = "全部";
+		  display_header.append(selectState);
+
+		  var selectRoom = document.createElement("select");
+		  selectRoom.className="form-select";
+		  var option1 = document.createElement("option");
+		  option1.value = "全部";
+		  option1.text = "全部";
+		  selectRoom.add(option1);
+		  var option0 = document.createElement("option");
+		  option0.value = "-";
+		  option0.text = "-";
+		  selectRoom.add(option0);
+		  var rooms;
+		  $.ajax({
+			  url:"roomServlet",
+			  type:"POST",
+			  data:{"action":"get_all_rooms"},
+			  async:false,
+			  success:function (data){
+				  rooms=JSON.parse(data);
+			  }
+		  })
+		  for (var j = 0; j < rooms.length; j++) {
+			  var option = document.createElement("option");
+			  option.value = rooms[j].room;
+			  option.text = rooms[j].room;
+			  selectRoom.add(option);
+		  }
+		  selectRoom.value = "全部";
+		  display_header.append(selectRoom);
+
+		  var select_button=document.createElement("button");
+		  select_button.id="select_button";
+		  select_button.innerHTML="查询";
+		  select_button.className="btn btn-primary";
+		  select_button.onclick=(function (selectState,selectRoom) {
+			  return function (){
+				  $.ajax({
+					  url:"pcServlet",
+					  type:"POST",
+					  data:{
+						  "action":"multi_select",
+						  "state":selectState.value,
+						  "room":selectRoom.value
+					  },
+					  success:function (data){
+						  show_pc_table(data)
+					  }
+				  })
+			  }
+		  })(selectState,selectRoom);
+		  display_header.append(select_button);
+		  select_pc();
+	  }
+
+	  function select_pc() {
+		  $.ajax({
+			  url: "pcServlet",
+			  type: "POST",
+			  data: {
+				  "action": "get_all_pcs"
+			  },
+			  success: function (data) {
+				  show_pc_table(data);
+			  }
+		  });
+	  }
+
+	  var pc_table_data;
+	  function show_pc_table(data) {
+		  pc_table_data=data;
+		  var data_json = JSON.parse(data);
+		  display_div.innerHTML = "";
+
+		  var table = document.createElement("table");
+		  display_div.append(table);
+		  table.innerHTML += "<thead><tr><th>ID</th><th>CPU</th><th>GPU</th><th>RAM</th><th>Storage Device</th><th>MotherBoard</th><th>State</th><th>Room</th><th>操作</th></tr></thead>";		  var tbody = document.createElement("tbody");
+		  for (var i = 0; i < data_json.length; i++) {
+			  var tr = document.createElement("tr");
+			  tr.innerHTML = "<td>" + data_json[i].id + "</td><td>" + data_json[i].CPU + "</td><td>" + data_json[i].GPU + "</td><td>" + data_json[i].RAM + "</td><td>" + data_json[i].StorageDevice + "</td><td>" + data_json[i].MotherBoard + "</td><td>" + data_json[i].state + "</td><td>" + data_json[i].room + "</td>";
+
+			  var td = document.createElement("td");
+			  var ch_button = document.createElement("button");
+			  ch_button.innerHTML = "修改";
+			  ch_button.className = "btn btn-primary";
+			  ch_button.onclick = (function (tr, id, CPU, GPU, RAM, StorageDevice, MotherBoard, State, room) {
+				  return function () {
+					  if (!in_change) {
+						  in_change = true;
+						  tr.innerHTML = "";
+
+						  var td_id = document.createElement("td");
+						  tr.append(td_id);
+						  td_id.innerHTML=id;
+
+						  var td_CPU = document.createElement("td");
+						  tr.append(td_CPU);
+						  var input_CPU = document.createElement("input");
+						  input_CPU.value = CPU;
+						  td_CPU.append(input_CPU);
+
+						  var td_GPU = document.createElement("td");
+						  tr.append(td_GPU);
+						  var input_GPU = document.createElement("input");
+						  input_GPU.value = GPU;
+						  td_GPU.append(input_GPU);
+
+						  var td_RAM = document.createElement("td");
+						  tr.append(td_RAM);
+						  var input_RAM = document.createElement("input");
+						  input_RAM.value = RAM;
+						  td_RAM.append(input_RAM);
+
+						  var td_StorageDevice = document.createElement("td");
+						  tr.append(td_StorageDevice);
+						  var input_StorageDevice = document.createElement("input");
+						  input_StorageDevice.value = StorageDevice;
+						  td_StorageDevice.append(input_StorageDevice);
+
+						  var td_MotherBoard = document.createElement("td");
+						  tr.append(td_MotherBoard);
+						  var input_MotherBoard = document.createElement("input");
+						  input_MotherBoard.value = MotherBoard;
+						  td_MotherBoard.append(input_MotherBoard);
+
+						  var td_State = document.createElement("td");
+						  tr.append(td_State);
+						  var selectState = document.createElement("select");
+						  var options = ["使用中", "闲置中", "需要维护"];
+						  for (var j = 0; j < options.length; j++) {
+							  var option = document.createElement("option");
+							  option.value = options[j];
+							  option.text = options[j];
+							  selectState.add(option);
+						  }
+						  selectState.value = State;
+						  td_State.append(selectState);
+
+						  var tdRoom = document.createElement("td");
+						  var selectRoom = document.createElement("select");
+						  var option0 = document.createElement("option");
+						  option0.value = "-";
+						  option0.text = "-";
+						  selectRoom.add(option0);
+						  var rooms;
+						  $.ajax({
+							  url:"roomServlet",
+							  type:"POST",
+							  data:{"action":"get_all_rooms"},
+							  async:false,
+							  success:function (data){
+								  rooms=JSON.parse(data);
+							  }
+						  })
+						  for (var j = 0; j < rooms.length; j++) {
+							  var option = document.createElement("option");
+							  option.value = rooms[j].room;
+							  option.text = rooms[j].room;
+							  selectRoom.add(option);
+						  }
+						  selectRoom.value = room;
+						  tdRoom.append(selectRoom);
+						  tr.append(tdRoom);
+
+						  var td_actions = document.createElement("td");
+						  tr.append(td_actions);
+
+						  var ok_button = document.createElement("button");
+						  ok_button.innerHTML = "确认";
+						  ok_button.className = "btn btn-success";
+						  ok_button.onclick = function () {
+							  $.ajax({
+								  url: "pcServlet",
+								  type: "POST",
+								  data: {
+									  "action": "update_pc",
+									  "id": id,
+									  "CPU": input_CPU.value,
+									  "GPU": input_GPU.value,
+									  "RAM": input_RAM.value,
+									  "storageDevice": input_StorageDevice.value,
+									  "motherBoard": input_MotherBoard.value,
+									  "state": selectState.value,
+									  "room": selectRoom.value,
+								  },
+								  success: function (data) {
+									  in_change = false;
+									  document.getElementById("select_button").onclick();
+								  }
+							  });
+						  };
+						  td_actions.append(ok_button);
+
+						  var cancel_button = document.createElement("button");
+						  cancel_button.innerHTML = "取消";
+						  cancel_button.className = "btn btn-info";
+						  cancel_button.onclick = function () {
+							  in_change = false;
+							  choose_pc();
+						  };
+						  td_actions.append(cancel_button);
+					  } else {
+						  alert("请先完成当前修改");
+					  }
+				  };
+			  })(tr, data_json[i].id, data_json[i].CPU, data_json[i].GPU, data_json[i].RAM, data_json[i].StorageDevice, data_json[i].MotherBoard, data_json[i].state, data_json[i].room);
+			  var del_button = document.createElement("button");
+			  del_button.innerHTML = "删除";
+			  del_button.className = "btn btn-danger";
+			  del_button.onclick = (function (id) {
+				  return function () {
+					  var confirmDelete = confirm("确定要删除该电脑吗？");
+					  if (confirmDelete) {
+						  $.ajax({
+							  url: "pcServlet",
+							  type: "POST",
+							  data: {
+								  "action": "delete_pc",
+								  "id": id
+							  },
+							  success: function (data) {
+								  select_pc(); // Refresh PC table after deletion
+							  }
+						  });
+					  }
+				  };
+			  })(data_json[i].id);
+			  if(user_group=="root"){
+				  td.append(ch_button);
+				  td.append(del_button);
+			  }else{
+				  td.innerHTML="没有权限"
+			  }
+			  tr.append(td);
+			  table.append(tr);
+		  }
+	  }
+
+	  function choose_fix(){
+		  var button=document.createElement("button");
+		  button.innerHTML="备份数据库";
+		  button.className="btn btn-primary";
+		  button.onclick=function (){
+			  $.ajax({
+				  url:"mysqlServlet",
+				  type:"POST",
+				  data:{"action":"bf"},
+				  success:function (data){
+					  alert(data)
+				  }
+			  })
+		  }
+		  display_div.append(button);
+	  }
+	</script>
+</body>
+</html>

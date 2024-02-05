@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <title>游艇俱乐部</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {background-color: #f5f5f5;}
+
+    button {
+        font-family: monospace;
+        background-color: #f3f7fe;
+        color: #3b82f6;
+        border: none;
+        border-radius: 8px;
+        width: 100px;
+        height: 45px;
+        transition: .3s;
+    }
+
+    button:hover {
+        background-color: #3b82f6;
+        box-shadow: 0 0 0 5px #3b83f65f;
+        color: #fff;
+    }
+    input {
+        border: 2px solid transparent;
+        width: 15em;
+        height: 2.5em;
+        padding-left: 0.8em;
+        outline: none;
+        overflow: hidden;
+        background-color: #F3F3F3;
+        border-radius: 10px;
+        transition: all 0.5s;
+    }
+
+    input:hover,
+    input:focus {
+        border: 2px solid #4A9DEC;
+        box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%);
+        background-color: white;
+    }
+</style>
+<body>
+
+<div class="container mt-5">
+
+    <div class="jumbotron">
+        <h1 class="display-4">游艇俱乐部</h1>
+        <p id="user_info" class="lead"></p>
+    </div>
+
+    <button class="btn btn-primary mr-2" onclick="lease()">租赁游艇</button>
+    <button class="btn btn-secondary mr-2" onclick="consumption()">我的订单</button>
+    <button class="btn btn-secondary" onclick="select_review()">评论</button>
+
+    <div id="display_div" class="mt-4">
+
+    </div>
+
+</div>
+<script>
+    var user;
+    (function (){
+        $.ajax({
+            url:"loginServlet",
+            type: "POST",
+            data:{"action":"getUser"},
+            success:function (data){
+                user=data;
+            }
+        })
+    })();
+    (function (){
+        $.ajax({
+            url:"memberServlet",
+            type: "POST",
+            data:{"action":"getName"},
+            success:function (data){
+                document.getElementById("user_info").innerHTML="你好,"+data+".";
+            }
+        })
+    })();
+
+    function lease(){
+        $.ajax({
+            url:"leaseServlet",
+            type:"POST",
+            data:{"action":"select_yacht"},
+            success:function (data){
+                var display_div=document.getElementById("display_div");
+                display_div.innerHTML="";
+
+                var data_json=JSON.parse(data);
+
+                //表头
+                var table=document.createElement("table");
+                var thead=document.createElement("thead");
+                var tr=document.createElement("tr");
+                var th1=document.createElement("th");
+                th1.innerHTML="游艇号";
+                tr.appendChild(th1);
+                var th2=document.createElement("th");
+                th2.innerHTML="游艇名";
+                tr.appendChild(th2);
+                var th3=document.createElement("th");
+                th3.innerHTML="颜色";
+                tr.appendChild(th3);
+                var th4=document.createElement("th");
+                th4.innerHTML="状态";
+                tr.appendChild(th4);
+                var th5=document.createElement("th");
+                th5.innerHTML="日租单价";
+                tr.appendChild(th5);
+                var th6=document.createElement("th");
+                th6.innerHTML="操作";
+                tr.appendChild(th6);
+                thead.appendChild(tr);
+                table.appendChild(thead);
+
+                //表行
+                var tbody=document.createElement("tbody");
+                table.appendChild(tbody);
+                for(var i=0;i<data_json.length;i++){
+                    var tr=document.createElement("tr");
+                    tbody.appendChild(tr)
+
+                    var td1=document.createElement("td");
+                    td1.innerHTML=data_json[i].id;
+                    tr.appendChild(td1);
+                    var td2=document.createElement("td");
+                    td2.innerHTML=data_json[i].name;
+                    tr.appendChild(td2);
+                    var td3=document.createElement("td");
+                    td3.innerHTML=data_json[i].color;
+                    tr.appendChild(td3);
+                    var td4=document.createElement("td");
+                    td4.innerHTML=data_json[i].state;
+                    tr.appendChild(td4);
+                    var td5=document.createElement("td");
+                    td5.innerHTML=data_json[i].daily_price;
+                    tr.appendChild(td5);
+                    var td6=document.createElement("td");
+                    var rent_button=document.createElement("button");
+                    if(data_json[i].state=="空闲中") {
+                        rent_button.innerHTML = "租借";
+                        rent_button.onclick = (function (id) {
+                            return function () {
+                                $.ajax({
+                                    url: "leaseServlet",
+                                    type: "POST",
+                                    data: {"action": "rent", "id": id},
+                                    success: function (data) {
+                                        if (data == "success") {
+
+                                        } else {
+                                            alert(data);
+                                        }
+                                        lease();
+                                    }
+                                })
+                            }
+                        })(data_json[i].id);
+                        td6.appendChild(rent_button);
+                    }
+                    tr.appendChild(td6);
+                }
+                display_div.appendChild(table);
+            }
+        })
+    }
+
+    function select_review() {
+        $.ajax({
+            url:"reviewServlet",
+            type:"POST",
+            data:{
+                action:"select"
+            },
+            success:function (data) {
+                display_review(data)
+            }
+        })
+    }
+
+    function display_review(data){
+        var display_div=document.getElementById("display_div");
+        display_div.innerHTML="";
+
+        var review_input=document.createElement("input");
+        review_input.style.width="88%"
+        review_input.style.marginTop="10px"
+        display_div.appendChild(review_input)
+        var review_button=document.createElement("button");
+        review_button.style.width="10%"
+        review_button.innerHTML="评论";
+        review_button.style.marginLeft="2%"
+        review_button.className="btn btn-primary";
+        review_button.onclick=(function (user,review_input) {
+            return function (){
+                var content=review_input.value;
+                if(content==""){
+                    alert("你还没有写评论哦")
+                }else{
+                    $.ajax({
+                        url:"reviewServlet",
+                        type:"POST",
+                        data:{
+                            action:"review",
+                            user:user,
+                            content:content
+                        },
+                        success:function (data){
+                            console.log(data)
+                            select_review();
+                        }
+                    })
+                }
+            }
+        })(user,review_input)
+        display_div.appendChild(review_button);
+
+        var data_json=JSON.parse(data);
+
+        var table=document.createElement("table");
+        table.style.marginTop="10px"
+        display_div.appendChild(table);
+        var tbody=document.createElement("tbody");
+        table.appendChild(tbody);
+        for(var i=0;i<data_json.length;i++){
+            var tr=document.createElement("tr");
+            tbody.appendChild(tr)
+
+            var td1=document.createElement("td");
+            var div=document.createElement("div");
+            div.style.marginLeft="10px"
+            td1.appendChild(div);
+
+            var div1=document.createElement("div");
+            div1.style.display="flex";
+            div1.style.marginTop="10px"
+            div.appendChild(div1);
+            var img=document.createElement("img");
+            img.src="admin/img/cd-avatar.png";
+            img.alt="avatar";
+            img.style="border-style:solid; border-width:5px; border-color:white; width:36px; height:36px; border-radius:50%;" +
+                "box-shadow:2.7px 2.4px 10px rgba(0, 0, 0, 0.042),\n" +
+                "  7.5px 6.5px 23.1px rgba(0, 0, 0, 0.103),\n" +
+                "  18.1px 15.7px 45.4px rgba(0, 0, 0, 0.199),\n" +
+                "  60px 52px 80px rgba(0, 0, 0, 0.35)";
+            div1.appendChild(img);
+            var user_info=document.createElement("h3");
+            user_info.innerHTML=data_json[i].user;
+            user_info.style.width="100%";
+            user_info.style.marginLeft="10px"
+            div1.appendChild(user_info);
+
+            var div2=document.createElement("div");
+            div2.style.display="flex";
+            div.appendChild(div2);
+            var content=document.createElement("p");
+            content.innerHTML=data_json[i].content;
+            content.style.marginTop="10px";
+            content.style.marginLeft="46px";
+            div2.appendChild(content);
+
+            var div3=document.createElement("div");
+            div3.style.display="flex";
+            div.appendChild(div3);
+            var info=document.createElement("p");
+            info.innerHTML="评论于"+data_json[i].time;
+            info.style.color="#a1a1a1";
+            info.style.marginTop="5px";
+            info.style.marginLeft="46px";
+            div3.appendChild(info)
+            if(data_json[i].user==user){
+                var withdrawn=document.createElement("p");
+                withdrawn.innerHTML="删除";
+                withdrawn.style.color="#ff4c4c";
+                withdrawn.style.marginTop="5px";
+                withdrawn.style.marginLeft="15px";
+                withdrawn.onclick=(function (user,id) {
+                    return function () {
+                        $.ajax({
+                            url: "reviewServlet",
+                            type: "POST",
+                            data: {
+                                "action": "del",
+                                "user": user,
+                                "id": id
+                            },
+                            success:function (data) {
+                                if(data=="success"){
+                                    select_review();
+                                }else{
+                                    alert(data);
+                                }
+                            }
+                        })
+                    }
+                })(user,data_json[i].id)
+                div3.appendChild(withdrawn)
+            }
+            tr.appendChild(td1);
+        }
+    }
+
+    function consumption(){
+        $.ajax({
+            url:"leaseServlet",
+            type:"POST",
+            data:{"action":"select_consumption_byUser"},
+            success:function (data){
+                display_consumption(data);
+            }
+        })
+    }
+
+    function display_consumption(data){
+        var display_div=document.getElementById("display_div");
+        display_div.innerHTML="";
+
+        display_div.appendChild(document.createElement("br"));
+
+        var data_json=JSON.parse(data);
+
+        //表头
+        var table=document.createElement("table");
+        var thead=document.createElement("thead");
+        var tr=document.createElement("tr");
+        var th1=document.createElement("th");
+        th1.innerHTML="订单号";
+        tr.appendChild(th1);
+        var th2=document.createElement("th");
+        th2.innerHTML="用户名";
+        tr.appendChild(th2);
+        var th3=document.createElement("th");
+        th3.innerHTML="游艇号";
+        tr.appendChild(th3);
+        var th4=document.createElement("th");
+        th4.innerHTML="交易类型";
+        tr.appendChild(th4);
+        var th5=document.createElement("th");
+        th5.innerHTML="时间";
+        tr.appendChild(th5);
+        var th6=document.createElement("th");
+        th6.innerHTML="总价";
+        tr.appendChild(th6);
+        var th7=document.createElement("th");
+        th7.innerHTML="状态";
+        var th8=document.createElement("th");
+        th8.innerHTML="总价";
+        tr.appendChild(th7);
+        // tr.appendChild(th8);
+        var th9=document.createElement("th");
+        th9.innerHTML="操作";
+        tr.appendChild(th9);
+        thead.appendChild(tr);
+        table.appendChild(thead);
+
+        //表行
+        var tbody=document.createElement("tbody");
+        table.appendChild(tbody);
+        for(var i=0;i<data_json.length;i++){
+            var tr=document.createElement("tr");
+            tbody.appendChild(tr)
+
+            var td1=document.createElement("td");
+            td1.innerHTML=data_json[i].order_num;
+            tr.appendChild(td1);
+            var td2=document.createElement("td");
+            td2.innerHTML=data_json[i].user;
+            tr.appendChild(td2);
+            var td3=document.createElement("td");
+            td3.innerHTML=data_json[i].id;
+            tr.appendChild(td3);
+            var td4=document.createElement("td");
+            td4.innerHTML=data_json[i].type;
+            tr.appendChild(td4);
+            var td5=document.createElement("td");
+            td5.innerHTML=data_json[i].time;
+            tr.appendChild(td5);
+            var td6=document.createElement("td");
+            td6.innerHTML=data_json[i].sum;
+            tr.appendChild(td6);
+            var td7=document.createElement("td");
+            td7.innerHTML=data_json[i].state;
+            tr.appendChild(td7);
+            var td9=document.createElement("td");
+            if(data_json[i].state=="not_billed") {
+                var rent_button = document.createElement("button");
+                rent_button.innerHTML = "归还";
+                rent_button.onclick = (function (order_num) {
+                    return function () {
+                        $.ajax({
+                            url: "leaseServlet",
+                            type: "POST",
+                            data: {"action": "give_back", "order_num": order_num},
+                            success: function (data) {
+                                if (data == "success") {
+
+                                } else {
+                                    alert(data);
+                                }
+                                consumption();
+                            }
+                        })
+                    }
+                })(data_json[i].order_num);
+                td9.appendChild(rent_button);
+            }
+            if(data_json[i].state=="unpaid"){
+                var rent_button = document.createElement("button");
+                rent_button.innerHTML = "支付";
+                rent_button.onclick = (function (order_num) {
+                    return function () {
+                        window.location.href="Pay.html?order_num="+order_num;
+
+
+                    }
+                })(data_json[i].order_num);
+                td9.appendChild(rent_button);
+            }
+            tr.appendChild(td9);
+        }
+        display_div.appendChild(table);
+    }
+</script>
+</body>
+</html>

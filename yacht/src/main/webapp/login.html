@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>登陆</title>
+
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="container mt-5" style="max-width: 380px;">
+    <h1 class="text-center mb-4">登录</h1>
+    <div class="card px-2 py-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <label for="user">用户名</label>
+                    <input id="user" class="form-control">
+                    <small class="form-text text-muted">请输入用户名</small>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <label for="password">密码</label>
+                    <input id="password" type="password" class="form-control">
+                </div>
+            </div>
+            <button id="loginBtn" class="btn btn-primary btn-block mt-4" onclick="login_button_onclick()">登录</button>
+            <div class="text-center mt-2">
+                <a href="Registered.html" class="d-inline-block mt-1">转到注册</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+
+<script>
+
+    function login_button_onclick() {
+        var user = document.getElementById("user").value;
+        var password = document.getElementById("password").value;
+        $.ajax({
+            url:"loginServlet",
+            type:"POST",
+            data:{"action":"login","user":user,"password":password},
+            success:function (data){
+                if(data=="success"||data=="success root"||data=="success staff"){
+                    if(data=="success"){
+                        $.ajax({
+                            url:"memberServlet",
+                            type:"POST",
+                            data:{"action":"isExisted","user":user},
+                            success:function (data){
+                                alert(user+" "+data);
+                                if(data=="true"){
+                                    window.location.href="YachtClub.html";
+                                }else{
+                                    window.location.href="MemberInfo.html";
+                                }
+                            }
+                        })
+                    }
+                    if(data=="success root"){
+                        window.location.href="admin_root.html";
+                    }
+                    if(data=="success staff"){
+                        window.location.href="admin_root.html";
+                    }
+                }else{
+                    alert(data);
+                }
+            }
+        });
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>完善会员信息</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <h1 class="mb-4">完善会员信息</h1>
+
+    <p id="user_info" class="font-weight-bold"></p>
+
+    <div class="form-group">
+        <label>姓名</label>
+        <input id="name" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>性别</label>
+        <select id="gender_select" class="form-control">
+            <option value="null">选择一个性别</option>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+            <option value="futa">不愿透露</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>生日</label>
+        <input type="date" id="birthday" class="form-control" value="2000-01-01" min="1900-01-01" max="2023-12-31">
+    </div>
+
+    <button class="btn btn-primary" onclick="button_onclick()">提交</button>
+
+</div>
+
+<script>
+
+    var user;
+    (function (){
+        $.ajax({
+            url:"loginServlet",
+            type: "POST",
+            data:{"action":"getUser"},
+            success:function (data){
+                user=data;
+                document.getElementById("user_info").innerHTML="会员号:"+user;
+            }
+        })
+    })();
+
+    function button_onclick(){
+
+        var name = document.getElementById("name").value;
+        var gender = document.getElementById("gender_select").value;
+        var birthday = document.getElementById("birthday").value;
+
+        var info = "";
+        var valid = true;
+
+        if(name == ""){
+            valid = false;
+            info += "姓名不能为空\n";
+        }
+
+        if(gender == "null"){
+            valid = false;
+            info += "请选择一个性别\n";
+        }
+
+        if(gender == "male"){
+            gender = "男";
+        }
+
+        if(gender == "female"){
+            gender = "女";
+        }
+
+        if(gender == "futa"){
+            gender = "不愿透露";
+        }
+
+        if(valid){
+
+            $.ajax({
+                url:"memberServlet",
+                type:"POST",
+                data:{
+                    "action":"add",
+                    "name":name,
+                    "gender":gender,
+                    "birthday":birthday
+                },
+                success:function (data){
+                    if(data=="success"){
+                        window.location.href="YachtClub.html";
+                    } else {
+                        alert(data);
+                    }
+                }
+            })
+
+        } else {
+
+            alert(info);
+
+        }
+
+    }
+
+</script>
+
+</body>
+</html>

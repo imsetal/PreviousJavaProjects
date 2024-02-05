@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Add Computer</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-center mb-4">Add Computer</h1>
+            <form id="addComputerForm">
+                <div class="form-group">
+                    <label for="cpu">CPU:</label>
+                    <input type="text" class="form-control" id="cpu" name="cpu" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gpu">GPU:</label>
+                    <input type="text" class="form-control" id="gpu" name="gpu" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ram">RAM:</label>
+                    <input type="text" class="form-control" id="ram" name="ram" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="storage">Storage Device:</label>
+                    <input type="text" class="form-control" id="storage" name="storage" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="motherboard">Motherboard:</label>
+                    <input type="text" class="form-control" id="motherboard" name="motherboard" required>
+                </div>
+                <button type="button" class="btn btn-primary btn-block" onclick="addComputer()">Add Computer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addComputer() {
+        var cpu = $("#cpu").val();
+        var gpu = $("#gpu").val();
+        var ram = $("#ram").val();
+        var storage = $("#storage").val();
+        var motherboard = $("#motherboard").val();
+
+        // 发送 AJAX 请求到后端，添加电脑
+        $.ajax({
+            url: "pcServlet",  // 替换为实际的后端处理地址
+            type: "POST",
+            data: {
+                "action": "add_pc",
+                "CPU": cpu,
+                "GPU": gpu,
+                "RAM": ram,
+                "storageDevice": storage,
+                "motherBoard": motherboard
+            },
+            success: function (data) {
+                // 处理后端返回的结果
+                alert(data);  // 可以根据实际需求进行更复杂的处理
+                window.location.href="main.html";
+            },
+            error: function (error) {
+                console.error("Error:", error);
+            }
+        });
+    }
+</script>
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>

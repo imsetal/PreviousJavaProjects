@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录-机房管理系统</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/demo.css">
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+
+<body class="light">
+    <div class="z-container">
+        <div class="main">
+            <div class="container a-container" id="a-container">
+
+                <div class="form" id="b-form" method="" action="">
+                    <h2 class="form_title title">登录到机房管理系统</h2>
+                    <input class="form__input" type="text" placeholder="User name" id="user">
+                    <input class="form__input" type="password" placeholder="Password" id="password">
+                    <button class="switch__button button submit" onclick="login()">登录</button>
+                </div>
+            </div>
+            <div class="container b-container" id="b-container">
+                <div class="form">
+                    <h2 class="form_title title">创建账户</h2>
+                    <input class="form__input" type="text" placeholder="User name" id="new_user">
+                    <input class="form__input" type="password" placeholder="Password" id="new_password">
+                    <button class="switch__button button submit" onclick="singup()">注册</button>
+                </div>
+            </div>
+            <div class="switch" id="switch-cnt">
+                <div class="switch__circle"></div>
+                <div class="switch__circle switch__circle--t"></div>
+                <div class="switch__container" id="switch-c1">
+                    <h2 class="switch__title title">你好 新朋友!</h2>
+                    <p class="switch__description description">点击这里创建新的账户</p>
+                    <button class="switch__button button switch-btn">去注册</button>
+                </div>
+                <div class="switch__container is-hidden" id="switch-c2">
+                    <h2 class="switch__title title">欢迎回来!</h2>
+                    <p class="switch__description description">点击这里登录到您的账户</p>
+                    <button class="switch__button button switch-btn">去登录</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/stopExecutionOnTimeout.js"></script>
+    <script>
+        let switchCtn = document.querySelector("#switch-cnt");
+        let switchC1 = document.querySelector("#switch-c1");
+        let switchC2 = document.querySelector("#switch-c2");
+        let switchCircle = document.querySelectorAll(".switch__circle");
+        let switchBtn = document.querySelectorAll(".switch-btn");
+        let aContainer = document.querySelector("#a-container");
+        let bContainer = document.querySelector("#b-container");
+        let allButtons = document.querySelectorAll(".submit");
+
+        let getButtons = e => e.preventDefault();
+
+        let changeForm = e => {
+
+            switchCtn.classList.add("is-gx");
+            setTimeout(function() {
+                switchCtn.classList.remove("is-gx");
+            }, 1500);
+
+            switchCtn.classList.toggle("is-txr");
+            switchCircle[0].classList.toggle("is-txr");
+            switchCircle[1].classList.toggle("is-txr");
+
+            switchC1.classList.toggle("is-hidden");
+            switchC2.classList.toggle("is-hidden");
+            aContainer.classList.toggle("is-txl");
+            bContainer.classList.toggle("is-txl");
+            bContainer.classList.toggle("is-z200");
+        };
+
+        let mainF = e => {
+            for (var i = 0; i < allButtons.length; i++) {
+                if (window.CP.shouldStopExecution(0)) break;
+                allButtons[i].addEventListener("click", getButtons);
+            }
+            window.CP.exitedLoop(0);
+            for (var i = 0; i < switchBtn.length; i++) {
+                if (window.CP.shouldStopExecution(1)) break;
+                switchBtn[i].addEventListener("click", changeForm);
+            }
+            window.CP.exitedLoop(1);
+        };
+
+        window.addEventListener("load", mainF);
+
+        function login() {
+            $.ajax({
+                url:"loginServlet",
+                type:"POST",
+                data:{
+                    "action":"login",
+                    "user":document.getElementById("user").value,
+                    "password":document.getElementById("password").value
+                },
+                success:function (data){
+                    if(data=="success"){
+                        window.location.href="main.html";
+                    }else{
+                        alert(data);
+                    }
+                }
+            })
+        }
+
+        function singup(){
+            $.ajax({
+                url:"loginServlet",
+                type:"POST",
+                data:{
+                    "action":"singup",
+                    "user":document.getElementById("new_user").value,
+                    "password":document.getElementById("new_password").value
+                },
+                success:function (data){
+                    if(data=="success"){
+                        window.location.href="main.html";
+                    }else{
+                        alert(data);
+                    }
+                }
+            })
+        }
+
+    </script>
+</body>
+
+</html>
